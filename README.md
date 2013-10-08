@@ -31,11 +31,34 @@ The following parameters let you control message handling of the **task-queue-wo
 * `method` (string) (Default: `GET`) Possible values: GET, DELETE, PUT, POST
 * `body` (string) The body to send when the value of `method` is POST. If the value of body can be parsed as JSON the request will be sent with `application/json` as content-type. Otherwise with `appliction/x-www-form-urlencoded`.
 * `retrylimit` (number) (Default: 3) Setting this to -1 disables the retrylimit, leaving the message in the queue forever if it does not process successfully.
-* `retrydelay` (number or array) If a number is supplied the visibility timeout of that message will be set to `retrydelay` seconds after an unsuccessful request. If an array is supplied (e.g. `[120,240,3600]`). . . . See also the [changeMessageVisibility](https://github.com/smrchy/rsmq#changemessagevisibility) method of [rsmq](https://github.com/smrchy/rsmq)
+* `retrydelay` (number or array) If a number is supplied the visibility timeout of that message will be set to `retrydelay` seconds after an unsuccessful request. If an array is supplied (e.g. `[120,240,3600]`) the retry delay will increase gradually. See also the [changeMessageVisibility](https://github.com/smrchy/rsmq#changemessagevisibility) method of [rsmq](https://github.com/smrchy/rsmq)
 * `maxts` (number) (Default: -1) A unix timestamp in seconds after which the message should not be processed anymore and will be deleted and handled as an error. A value of -1 disabled the maxts check.
 * `timeout` (number) (Default: 10) Time in seconds to wait for a reply for this request. Must be between 1 and 3600.
 * `failqueue` (string) The name of the queue where the message is moved after it did not process successfully. Either by reaching the `retrylimit` or the `maxts` value. If no `failqueue` is supplied the message will just be deleted.
 
+
+## Running task-queue-worker
+
+The **task-queue-worker** will be started from the command line.
+
+`node worker.js -k QueuesToMonitor`
+
+Parameters:
+
+* `-q`: (string) Comma separated list of queues to monitor (e.g. `-q alerts,jobs,uptimecheck`)
+* `-k`: (string) Name of Redis **SET** that contains all queues to monitor (e.g. `-k tqm:QueuesToMonitor`). By using the -k parameter you can make sure that multiple task-queue-workers are using the same setting.
+* `-tasks` (number) The amount of concurrent tasks the task-queue-worker will handle. (Default: 5)
+
+**Note:** If `-q` or `-k` contains no queues or are not supplied the **tasks-queue-worker** will exit.
+
+## Workflow
+
+1. Request a message until the number of `tasks` is reached.
+2. If no message is received gradually increase the requests for the next message to 1,2,3,5 secconds and go to 1.
+3. Process the message with the `timeout`. If the message returns a 2xx status code delete the message. And go to 1.
+4. If the message cannot be requeued (see `retrylimit` and `maxts` parameters) delete it (and add it to the `failqueue` if supplied). Go to 1.
+5.  If `retrydelay` is supplied modify the Message visibility ([changeMessageVisibility](https://github.com/smrchy/rsmq#changemessagevisibility))
+6. Go to 1.
 
 
 ## Supported queues
