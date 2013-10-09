@@ -10,6 +10,19 @@ The **task-queue-worker** should be run as a process on one or more machines and
 
 Please have a look at the message format for more details.
 
+## Client
+
+### Example
+
+```
+var TqwClient = require( "task-queue-worker" ).Client;
+var client = new TqwClient();
+client.send( { "url": "http://some.domain.com/job/to/run" }, function( err ){
+	// ...
+});
+```
+
+> TODO
 
 ## Message format
 
@@ -29,15 +42,17 @@ The following parameters let you control message handling of the **task-queue-wo
 
 * `url` (string) **Required** Must be a valid URL.
 * `method` (string) (Default: `GET`) Possible values: GET, DELETE, PUT, POST
-* `body` (string) The body to send when the value of `method` is POST. If the value of body can be parsed as JSON the request will be sent with `application/json` as content-type. Otherwise with `appliction/x-www-form-urlencoded`.
+* `body` (string) The body to send when the value of `method` is PUT or POST. If the value of body can be parsed as JSON the request will be sent with `application/json` as content-type. Otherwise with `appliction/x-www-form-urlencoded`. If `body` is used and no `method` has been defined automatically `POST` would be used.
 * `retrylimit` (number) (Default: 3) Setting this to -1 disables the retrylimit, leaving the message in the queue forever if it does not process successfully.
 * `retrydelay` (number or array) If a number is supplied the visibility timeout of that message will be set to `retrydelay` seconds after an unsuccessful request. If an array is supplied (e.g. `[120,240,3600]`) the retry delay will increase gradually. See also the [changeMessageVisibility](https://github.com/smrchy/rsmq#changemessagevisibility) method of [rsmq](https://github.com/smrchy/rsmq)
 * `maxts` (number) (Default: -1) A unix timestamp in seconds after which the message should not be processed anymore and will be deleted and handled as an error. A value of -1 disabled the maxts check.
 * `timeout` (number) (Default: 10) Time in seconds to wait for a reply for this request. Must be between 1 and 3600.
 * `failqueue` (string) The name of the queue where the message is moved after it did not process successfully. Either by reaching the `retrylimit` or the `maxts` value. If no `failqueue` is supplied the message will just be deleted.
+* `maxredirects` (number) (Default: 10) The maximum number of redirects to follow. If `0` is set it will not follow HTTP 3xx responses and judge them as error.
 
+**Defaults:** If the task-queue-worker is used as module you the defaults, expect `url` and `body` can be within the options
 
-## Running task-queue-worker
+## Running task-queue-worker as process
 
 The **task-queue-worker** will be started from the command line.
 
@@ -45,13 +60,34 @@ The **task-queue-worker** will be started from the command line.
 
 Parameters:
 
-* `-q`: (string) Comma separated list of queues to monitor (e.g. `-q alerts,jobs,uptimecheck`)
-* `-k`: (string) Name of Redis **SET** that contains all queues to monitor (e.g. `-k tqm:QueuesToMonitor`). By using the -k parameter you can make sure that multiple task-queue-workers are using the same setting.
-* `-tasks` (number) The amount of concurrent tasks the task-queue-worker will handle. (Default: 5)
+* `-q, --queues`: (string) Comma separated list of queues to monitor (e.g. `-q alerts,jobs,uptimecheck`)
+* `-k, -k???`: (string) Name of Redis **SET** that contains all queues to monitor (e.g. `-k tqm:QueuesToMonitor`). By using the -k parameter you can make sure that multiple task-queue-workers are using the same setting.
+* `-t, --taskcount` (number) The amount of concurrent tasks the task-queue-worker will handle. (Default: 5)
 
 **Note:** If `-q` or `-k` contains no queues or are not supplied the **tasks-queue-worker** will exit.
 
+> eventually as `taskqueuewoker -k QueuesToMonitor` if installed globally.
+
+## Using task-queue-worker as module
+
+> TODO
+
+### Example
+
+```
+var TQW = require( "task-queue-worker" )
+var worker = new TQW.Worker()
+worker.on( "error", function( err ){} )
+worker.on( "success", function( response ){} )
+```
+
+### Events
+
+* `error`
+
 ## Workflow
+
+> TODO Diagram
 
 1. Request a message until the number of `tasks` is reached.
 2. If no message is received gradually increase the requests for the next message to 1,2,3,5 secconds and go to 1.

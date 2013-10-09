@@ -12,12 +12,17 @@
 	"dependencies": {
 		"hiredis": "*",
 		"redis": "*",
-		"underscore": "*"
+		"lodash": "*"
 	},
 	"devDependencies": {
 		"mocha": "*",
 		"should": "*",
-		"async": "*"
+		"async": "*",
+
+		"grunt": "0.4.x",
+		"grunt-contrib-coffee": "*",
+		"grunt-regarde": "*",
+		"grunt-include-replace": "*"
 	},
 	"keywords": [
 		"queue",
