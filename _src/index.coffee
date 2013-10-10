@@ -1,3 +1,4 @@
 exports.version = '@@version'
 
-module.exports = require './lib/worker'
+exports.Worker = require './lib/worker'
+exports.Client = require './lib/client'

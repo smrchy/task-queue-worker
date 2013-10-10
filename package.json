@@ -1,18 +1,26 @@
 {
-    "name": "task-queue-worker",
-    "description": "A powerful tool for background processing of tasks that are run by making standard http requests.",
-    "version": "0.1.0",
-    "author": "P. Liess <smrchy+npm@gmail.com>",
-    "engines": {
+	"name": "task-queue-worker",
+	"description": "A powerful tool for background processing of tasks that are run by making standard http requests.",
+	"version": "0.1.0",
+	"author": "P. Liess <smrchy+npm@gmail.com>",
+	"engines": {
 		"node": "> 0.8.10"
 	},
 	"scripts": {
 		"test": "mocha ./test/test.js"
 	},
+	"bin": {
+		"taskqueueworker": "./bin/taskqueueworker"
+	},
+	"main": "index",
 	"dependencies": {
+		"rsmq": "*",
 		"hiredis": "*",
-		"redis": "*",
-		"lodash": "*"
+    	"redis": "*",
+		"lodash": "*",
+		"cli": "*",
+		"colors": "*",
+		"extend": "*"
 	},
 	"devDependencies": {
 		"mocha": "*",
@@ -35,6 +43,12 @@
 	"repository" : {
 		"type": "git",
 		"url": "http://github.com/smrchy/task-queue-worker.git"
-	}
-
+	},
+	"directories": {
+		"lib": "./lib"
+	},
+	"licenses": [{
+		"type": "MIT"
+	}],
+	"readmeFilename": "README.md"
 }

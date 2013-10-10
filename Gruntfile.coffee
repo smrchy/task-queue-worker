@@ -3,11 +3,10 @@ module.exports = (grunt) ->
 	# Project configuration.
 	grunt.initConfig
 		pkg: grunt.file.readJSON('package.json')
-		deploy: deploy
 		regarde:
 			coffee:
 				files: ["_src/**/*.coffee"]
-				tasks: [ "coffee:serverchanged", "includereplace" ]
+				tasks: [ "coffee:changed", "includereplace" ]
 			
 		coffee:
 			changed:
@@ -42,7 +41,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-regarde"
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-include-replace"
-
 
 	# just a hack until this issue has been fixed: https://github.com/yeoman/grunt-regarde/issues/3
 	grunt.option('force', not grunt.option('force'))

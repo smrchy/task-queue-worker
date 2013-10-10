@@ -42,7 +42,7 @@ The following parameters let you control message handling of the **task-queue-wo
 
 * `url` (string) **Required** Must be a valid URL.
 * `method` (string) (Default: `GET`) Possible values: GET, DELETE, PUT, POST
-* `body` (string) The body to send when the value of `method` is PUT or POST. If the value of body can be parsed as JSON the request will be sent with `application/json` as content-type. Otherwise with `appliction/x-www-form-urlencoded`. If `body` is used and no `method` has been defined automatically `POST` would be used.
+* `body` (string) The body to send when the value of `method` is POST. If the value of body can be parsed as JSON the request will be sent with `application/json` as content-type. Otherwise with `appliction/x-www-form-urlencoded`. If `body` is used and no `method` has been defined automatically `POST` would be used.
 * `retrylimit` (number) (Default: 3) Setting this to -1 disables the retrylimit, leaving the message in the queue forever if it does not process successfully.
 * `retrydelay` (number or array) If a number is supplied the visibility timeout of that message will be set to `retrydelay` seconds after an unsuccessful request. If an array is supplied (e.g. `[120,240,3600]`) the retry delay will increase gradually. See also the [changeMessageVisibility](https://github.com/smrchy/rsmq#changemessagevisibility) method of [rsmq](https://github.com/smrchy/rsmq)
 * `maxts` (number) (Default: -1) A unix timestamp in seconds after which the message should not be processed anymore and will be deleted and handled as an error. A value of -1 disabled the maxts check.
