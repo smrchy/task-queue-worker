@@ -17,6 +17,7 @@
 		"rsmq": "*",
 		"hiredis": "*",
     	"redis": "*",
+    	"request": "*",
 		"lodash": "*",
 		"cli": "*",
 		"colors": "*",

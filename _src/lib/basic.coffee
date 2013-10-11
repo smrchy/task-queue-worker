@@ -3,6 +3,8 @@ _ = require('lodash')._
 extend = require('extend')
 colors = require('colors')
 
+_defaultLogging = if "--debug" in process.argv then "debug" else "info"
+
 # # Basic Module
 # ### extends [EventEmitter]
 
@@ -16,7 +18,7 @@ module.exports = class Basic extends require('events').EventEmitter
 
 	# **defaults** *Function* basic object to hold config defaults. Will be overwritten by the constructor options
 	defaults: =>
-		logging: "debug"
+		logging: _defaultLogging
 	
 	# **severitys** *Array* List of availible logging severitys
 	logging_severitys: "fatal,error,warning,info,debug".split( "," )
@@ -165,7 +167,9 @@ module.exports = class Basic extends require('events').EventEmitter
 		for _k, _v of data 
 			_err[ _k ] = _v
 
-		if _.isFunction( cb )
+		if cb is true
+			return _err
+		else if _.isFunction( cb )
 			#@log "error", "", _err
 			cb( _err )
 		else if _.isString( cb )

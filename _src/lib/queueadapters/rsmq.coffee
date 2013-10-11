@@ -3,7 +3,7 @@ async = require("async")
 
 module.exports = ( config )->
 
-	class RSMQQueue extends require( "../basic" )
+	class RSMQ extends require( "../basic" )
 		defaults: =>
 			return @extend true, super,
 				name: null
@@ -13,10 +13,11 @@ module.exports = ( config )->
 			return
 
 		initialize: =>
+			@emptycount = 0
 			@getter( "name", =>@config.name )
 
-		send: ( msg, cb )=>
-			_data = { qname: @config.name, message: msg.toString(), delay: msg.getDelay() }
+		send: ( msg, delay, cb )=>
+			_data = { qname: @config.name, message: msg.toString(), delay: ( if delay? then delay else msg.getDelay() ) }
 			@debug "send", _data
 			@rsmq.sendMessage _data, ( err, resp )=>
 				if err
@@ -28,39 +29,60 @@ module.exports = ( config )->
 				return
 			return
 
-		receive: =>
+		receive: ( caller )=>
 			@debug "start receive"
-			@rsmq.receiveMessage qname: @config.name, ( err, msg )=>
-				@debug "received", msg
-				if err
-					@emit( "next" )
-					@error "receive queue message", err
-					return
-				if msg?.id
-					_id = msg.id
-					_fnNext = ( err )=>
-						@del( _id ) if err
+			@emptycount++
+			process.nextTick =>
+				@rsmq.receiveMessage qname: @config.name, ( err, msg )=>
+					@debug "received", msg
+					if err
 						@emit( "next" )
+						caller.emit( "next" )
+						@error "receive queue message", err
 						return
+					if msg?.id
+						@emptycount = 0
+						_id = msg.id
+						_fnNext = ( err )=>
+							@debug "after next", err
+							@del( _id ) if not err?
+							@emit( "next" )
+							caller.emit( "next" )
+							return
 
-					_meta =
-						receiveCount: msg.rc
-						firstReceive: msg.fr
-						created: msg.sent
+						_fnFail = ( err, msg )=>
+							@warning "messaged failed", err
+							@del( _id )
+							@emit( "failed", msg )
+							caller.emit( "failed", msg )
+							@emit( "next" )
+							caller.emit( "next" )
+							return
 
-					@emit "message", msg.message, _meta, _fnNext
-					#@receive( true ) if _useIntervall
-				else
-					@emit( "empty" )
+						_meta =
+							receiveCount: msg.rc
+							firstReceive: msg.fr
+							created: msg.sent
+
+						@debug "message", msg.message, _meta, _fnNext, _fnFail
+						@emit "message", msg.message, _meta, _fnNext, _fnFail
+						caller.emit "message", msg.message, _meta, _fnNext, _fnFail
+						#@receive( true ) if _useIntervall
+					else
+						@emptycount++
+						@emit( "empty" )
+						caller.emit( "empty" )
+					return
 				return
 			return
 
 		del: ( id )=>
 			@rsmq.deleteMessage qname: @config.name, id: id, ( err, resp )=>
-			if err
-				@error "delete queue message", err
+				if err
+					@error "delete queue message", err
+					return
+				@debug "delete queue message", resp
 				return
-			@debug "delete queue message", resp
 			return
 
 
@@ -78,20 +100,24 @@ module.exports = ( config )->
 		initialize: =>
 			@rsmq = new RedisMQ( @config )
 			@queues = {}
-			@on "queue:ready", ( name )=>
-				_q = new RSMQQueue( @rsmq, name: name )
-				_q.on "new", ( resp )=>@emit( "new", name, resp )
-				_q.on "message", ( message, meta, next )=>@emit( "message", name, message, meta, next )
-				_q.on "next", =>@emit( "next", name )
-				_q.on "empty", =>@emit( "empty", name )
-				@queues[ name ] = _q
-				return
 
 			if @rsmq.connected
 				@initQueue()
 			else
 				@rsmq.once "connect", @initQueues
 			return
+
+		prepareQueue: ( name )=>
+			_q = new RSMQ( @rsmq, name: name )
+			_q.on "new", ( resp )=>@emit( "new", name, resp )
+			_q.on "message", ( message, meta, next, fail )=>
+				#@error "emit message", name, message
+				@emit( "message", name, message, meta, next, fail )
+			_q.on "next", =>@emit( "next", name )
+			_q.on "empty", =>@emit( "empty", name )
+			_q.on "failed", ( msg )=>@emit( "failed", name, msg )
+			@queues[ name ] = _q
+			return _q
 
 		initQueues: =>
 			@debug "init rsmq queues", @config.queues
@@ -108,8 +134,11 @@ module.exports = ( config )->
 			@rsmq.createQueue qname: queue, ( err, resp )=>
 				if err?.name is "queueExists"
 					@debug "queue allready existed"
-					@emit "queue:ready", queue
-					cb( null )
+					_q = @prepareQueue( queue )
+					@emit "queue:ready", _q
+					process.nextTick =>
+						cb( null, _q )
+						return
 					return
 				
 				if err
@@ -120,11 +149,24 @@ module.exports = ( config )->
 					@debug "queue created"
 				else
 					@debug "queue allready existed"
-				@emit "queue:ready", queue
-				cb( null )
+					
+				_q = @prepareQueue( queue )
+				@emit "queue:ready", _q
+				process.nextTick =>
+					cb( null, _q )
+					return
 				return
 
 			return
+
+		grabQueue: ( name, cb )=>
+			_q = @getQueue( name )
+			if _q?
+				cb( null, _q )
+			else
+				@initQueue( name, cb )
+			return
+
 
 		getQueue: ( name )=>
 			if @queues[ name ]?

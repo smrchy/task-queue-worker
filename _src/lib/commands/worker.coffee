@@ -1,5 +1,7 @@
-cli = require('cli').enable('help', 'status')
-TQW = require( "./worker" )
+cli = require('cli').enable('help', 'status', "version")
+TQW = require( "../../index" )
+
+cli.setApp( "Task Queue - Worker", TQW.version )
 
 exports.run = ->
 	cli.parse(
@@ -11,8 +13,8 @@ exports.run = ->
 		ns: [ false, "RSMQ Namespace", "string", "taskqueueworker" ]
 	)
 	cli.main ( args, options )->
-		
-		new TQW( options )
+
+		new TQW.Worker( options )
 
 		return
 	return

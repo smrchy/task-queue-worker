@@ -16,6 +16,8 @@ module.exports = class Worker extends require( "./basic" )
 			options: {}
 			# rsmq options
 			ns: "taskqueueworker"
+			# message defaults
+			messageDefaults: {}
 
 	_validateOptions:( options )=>
 		if not options.queues?.length and not options.configkey?.length
@@ -51,7 +53,7 @@ module.exports = class Worker extends require( "./basic" )
 	onReady: =>
 		for i in [1..@config.taskcount]
 			@debug "init a new queuing", i
-			new Queueing( @queueModule, queues: @config.queues )
+			new Queueing( @, i, @queueModule, queues: @config.queues, messageDefaults: @config.messageDefaults )
 		return
 
 	loadQueueNamesFormConfigKey: ( configkey, cb )=>
@@ -67,6 +69,7 @@ module.exports = class Worker extends require( "./basic" )
 			cb( null, @config.queues )	
 			return
 		return
+
 
 	ERRORS: =>
 		@extend super, 

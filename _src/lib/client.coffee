@@ -13,6 +13,8 @@ module.exports = class Worker extends require( "./basic" )
 			options: {}
 			# rsmq options
 			ns: "taskqueueworker"
+			# message defaults
+			messageDefaults: {}
 
 	_validateOptions:( options )=>
 		if not options.queue?.length
@@ -22,6 +24,8 @@ module.exports = class Worker extends require( "./basic" )
 
 	initialize: =>
 		@connected = false
+
+		@Message = require( "./message" )( @config.messageDefaults )
 
 		@config.queues = [ @config.queue ]
 		@queueModule = require( "./queueadapters/#{ @config.queuetype }" )( @config )
@@ -48,8 +52,8 @@ module.exports = class Worker extends require( "./basic" )
 		return
 
 	_send: ( msg, cb )=>
-		_msg = new Message( msg )
-		@queue.send _msg, ( err, resp )=>
+		_msg = new @Message( msg )
+		@queue.send _msg, 0, ( err, resp )=>
 			if err
 				@_handleError( cb, err )
 				return
