@@ -1,7 +1,7 @@
 {
 	"name": "task-queue-worker",
 	"description": "A powerful tool for background processing of tasks that are run by making standard http requests.",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"author": "P. Liess <smrchy+npm@gmail.com>",
 	"engines": {
 		"node": "> 0.8.10"
@@ -10,10 +10,12 @@
 		"test": "mocha ./test/test.js"
 	},
 	"bin": {
-		"taskqueueworker": "./bin/taskqueueworker"
+		"taskqueueworker": "./bin/taskqueueworker",
+		"taskqueueclient": "./bin/taskqueueclient"
 	},
 	"main": "index",
 	"dependencies": {
+		"async": "*",
 		"rsmq": "*",
 		"hiredis": "*",
     	"redis": "*",

@@ -64,7 +64,7 @@ module.exports = ( config )->
 							firstReceive: msg.fr
 							created: msg.sent
 
-						@debug "message", msg.message, _meta, _fnNext, _fnFail
+						@debug "message", msg.message, _meta
 						@emit "message", msg.message, _meta, _fnNext, _fnFail
 						caller.emit "message", msg.message, _meta, _fnNext, _fnFail
 						#@receive( true ) if _useIntervall
@@ -149,7 +149,7 @@ module.exports = ( config )->
 					@debug "queue created"
 				else
 					@debug "queue allready existed"
-					
+
 				_q = @prepareQueue( queue )
 				@emit "queue:ready", _q
 				process.nextTick =>
