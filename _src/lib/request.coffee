@@ -1,6 +1,8 @@
 request = require( "request" )
 
-module.exports = class Request extends require( "./basic" )
+config = require "./config" 
+
+module.exports = class TQWRequest extends require( "mpbasic" )( config )
 	
 	constructor: ( @msg, options )->
 		super( options )
@@ -11,7 +13,7 @@ module.exports = class Request extends require( "./basic" )
 			url: @msg.url
 			method: @msg.method
 			headers: @msg.httpHeaders
-			timeout: @msg.timeout
+			timeout: @msg.timeout * 1000
 
 		_body = @msg.body
 		if @msg.hasBody
@@ -26,12 +28,12 @@ module.exports = class Request extends require( "./basic" )
 		else
 			_opt.followRedirect = false
 
-		@info "call http", _opt
+		@debug "call http", _opt
 		request _opt, @_handle( cb )
 		return
 
 	_handle: ( cb )=>
-		return ( err, req )=>
+		return ( err, req, body )=>
 			if @msg.worker?
 				@msg.worker.emit "request:body", req?.body
 			if err
@@ -49,4 +51,4 @@ module.exports = class Request extends require( "./basic" )
 
 	ERRORS: =>
 		@extend super, 
-			"ENOT2XX"; "The http response is not type of 200"
+			"ENOT2XX": "The http response is not type of 200"

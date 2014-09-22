@@ -1,9 +1,12 @@
 RedisMQ = require("rsmq")
 async = require("async")
 
-module.exports = ( config )->
+config = require "../config"
 
-	class RSMQ extends require( "../basic" )
+module.exports = ->
+	
+	class TQWRSMQ extends require( "mpbasic" )( config )
+		
 		defaults: =>
 			return @extend true, super,
 				name: null
@@ -25,6 +28,7 @@ module.exports = ( config )->
 					cb( err ) if cb?
 					return
 				@emit "new", resp
+				@debug "message send", resp
 				cb( null, resp ) if cb?
 				return
 			return
@@ -86,8 +90,8 @@ module.exports = ( config )->
 			return
 
 
-	class RSMQAdapter extends require( "../basic" )
-
+	class TQWRSMQAdapter extends require( "mpbasic" )( config )
+		_config_name: "_global"
 		defaults: =>
 			return @extend true, super,
 				queues: []
@@ -98,6 +102,7 @@ module.exports = ( config )->
 				ns: "taskqueueworker"
 
 		initialize: =>
+			@debug "config", @config
 			@rsmq = new RedisMQ( @config )
 			@queues = {}
 
@@ -108,7 +113,7 @@ module.exports = ( config )->
 			return
 
 		prepareQueue: ( name )=>
-			_q = new RSMQ( @rsmq, name: name )
+			_q = new TQWRSMQ( @rsmq, name: name )
 			_q.on "new", ( resp )=>@emit( "new", name, resp )
 			_q.on "message", ( message, meta, next, fail )=>
 				#@error "emit message", name, message
@@ -146,9 +151,9 @@ module.exports = ( config )->
 					return
 
 				if resp is 1
-					@debug "queue created"
+					@debug "queue created", queue
 				else
-					@debug "queue allready existed"
+					@debug "queue allready existed", queue
 
 				_q = @prepareQueue( queue )
 				@emit "queue:ready", _q
@@ -182,4 +187,4 @@ module.exports = ( config )->
 			return ret
 
 
-	return new RSMQAdapter( config )
+	return new TQWRSMQAdapter( config )

@@ -35,7 +35,7 @@ module.exports = (grunt) ->
 					suffix: ''
 
 				files:
-					"": ["index.js"]
+					"index.js": ["index.js"]
 
 	# Load npm modules
 	grunt.loadNpmTasks "grunt-regarde"
@@ -46,7 +46,7 @@ module.exports = (grunt) ->
 	grunt.option('force', not grunt.option('force'))
 	
 	# ALIAS TASKS
-	grunt.registerTask "watch", "regarde"
+	grunt.registerTask "watch", [ "build", "regarde" ]
 	grunt.registerTask "default", "build"
 
 	# build the project

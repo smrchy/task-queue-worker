@@ -1,7 +1,7 @@
 {
 	"name": "task-queue-worker",
 	"description": "A powerful tool for background processing of tasks that are run by making standard http requests.",
-	"version": "0.1.1",
+	"version": "0.2.0",
 	"author": "P. Liess <smrchy+npm@gmail.com>",
 	"engines": {
 		"node": "> 0.8.10"
@@ -15,6 +15,7 @@
 	},
 	"main": "index",
 	"dependencies": {
+		"mpbasic": "0.0.x",
 		"async": "*",
 		"rsmq": "*",
 		"hiredis": "*",

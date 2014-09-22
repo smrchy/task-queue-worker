@@ -1,7 +1,9 @@
 Redis = require "redis"
 Queueing = require "./queueing"
 
-module.exports = class Worker extends require( "./basic" )
+config = require "./config" 
+
+module.exports = class TQWWorker extends require( "mpbasic" )( config )
 
 	defaults: =>
 		return @extend true, super,
@@ -45,15 +47,16 @@ module.exports = class Worker extends require( "./basic" )
 		return
 
 	initQueues: =>
-		@config.queues = @config.queues.split( "," )
-		@queueModule = require( "./queueadapters/#{ @config.queuetype }" )( @config )
+		config.queues = @config.queues = @config.queues.split( "," )
+		#@debug "initQueues", @config
+		@queueModule = require( "./queueadapters/#{ @config.queuetype }" )()
 		@queueModule.on "ready", @onReady
 		return
 
 	onReady: =>
 		for i in [1..@config.taskcount]
 			@debug "init a new queuing", i
-			new Queueing( @, i, @queueModule, queues: @config.queues, messageDefaults: @config.messageDefaults )
+			new Queueing( @, i, @queueModule, { queues: @config.queues, messageDefaults: @config.messageDefaults } )
 		return
 
 	loadQueueNamesFormConfigKey: ( configkey, cb )=>

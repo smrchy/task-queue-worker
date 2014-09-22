@@ -1,7 +1,9 @@
 Redis = require "redis"
+
+config = require "./config" 
 Message = require "./message"
 
-module.exports = class Worker extends require( "./basic" )
+module.exports = class TQWClient extends require( "mpbasic" )( config )
 	defaults: =>
 		return @extend true, super,
 			queue: ""
@@ -26,6 +28,8 @@ module.exports = class Worker extends require( "./basic" )
 		@connected = false
 
 		@Message = require( "./message" )( @config.messageDefaults )
+
+		config.queues = [ @config.queue ]
 
 		@config.queues = [ @config.queue ]
 		@queueModule = require( "./queueadapters/#{ @config.queuetype }" )( @config )
@@ -67,5 +71,5 @@ module.exports = class Worker extends require( "./basic" )
 
 	ERRORS: =>
 		@extend super, 
-			"EMISSINGQUEUE": "You have to define a queue name to use"
-			"EQUEUENOTAVAIL": "The gien queue is not availible"
+			"EMISSINGQUEUE": [ 409, "You have to define a queue name to use"]
+			"EQUEUENOTAVAIL": [ 404, "The given queue is not availible"]

@@ -2,11 +2,13 @@ utils = require( "./utils" )
 async = require( "async" )
 _ = require( "lodash" )._
 
-module.exports = class Queueing extends require( "./basic" )
+config = require "./config" 
+
+module.exports = class TQWQueueing extends require( "mpbasic" )( config )
 
 	defaults: =>
 		return @extend true, super,
-			intervall: [ 1,2,3,5 ]
+			intervall: [ 0,1,2,3,5 ]
 			probability: 85
 
 	constructor: ( @worker, @Qidx, @queueModule, options )->
@@ -28,6 +30,7 @@ module.exports = class Queueing extends require( "./basic" )
 
 	selectNextQueue: ( cb )=>
 		_queues = @queueModule.listQueues()
+		@debug "queue list", _queues
 		if _queues.length is 1
 			cb( null, _queues[ 0 ] )
 			return
@@ -88,7 +91,7 @@ module.exports = class Queueing extends require( "./basic" )
 		return
 
 	message: ( msg, meta, next, fail )=>
-		@error "message receiverd", msg
+		#@error "message receiverd", msg
 		try
 			_msg = new @Message( msg, meta, @worker )
 			_msg.process( next, fail )

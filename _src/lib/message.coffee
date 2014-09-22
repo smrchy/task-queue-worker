@@ -1,11 +1,13 @@
 methods = [ "GET", "PUT", "POST", "DELETE" ]
 urlParser = require( "url" )
 _ = require( "lodash" )._
+
+config = require "./config" 
 utils = require( "./utils" )
 Request = require( "./request" )
 
 module.exports = ( options )->
-	return class Message extends require( "./basic" )
+	return class TMQMessage extends require( "mpbasic" )( config )
 		_singleton: false
 		defaults: =>
 			return @extend true, super,
@@ -20,7 +22,7 @@ module.exports = ( options )->
 
 		constructor: ( data, @meta, @worker )->
 			super( options )
-
+			@debug "config", @config
 			@defineProperties()
 
 			# convert to object ig it's a json
@@ -123,6 +125,7 @@ module.exports = ( options )->
 							if not _.isNumber( _v ) and not ( _.isArray( _v ) and _v.length )
 								@warning "invalid `#{_k}` so use default `#{@config[ _k ]}`"
 								return
+					@debug "set msg props", _k, _v
 					@data[ _k ] = _v
 					return
 				) )
@@ -130,9 +133,9 @@ module.exports = ( options )->
 
 		ERRORS: =>
 			@extend super, 
-				"EMISSINGURL"; "You have to define at least a url."
-				"EINVALIDURL": "The url has to be a string and a valid url with leading protokoll. E.g.( http://www.google.com )"
-				"EINVALIDMETHOD": "Only method of `#{methods.join( ", " )}` are allowed"
-				"EREACHEDRETRYLIMIT": "This message reached it's retry limit. So delete it."
-				"EEXPIRED": "This message reached it's `maxts` limit. So delete it."
+				"EMISSINGURL": [ 409, "You have to define at least a url."]
+				"EINVALIDURL": [ 409, "The url has to be a string and a valid url with leading protokoll. E.g.( http://www.google.com )"]
+				"EINVALIDMETHOD": [ 409, "Only method of `#{methods.join( ", " )}` are allowed"]
+				"EREACHEDRETRYLIMIT": [ 500, "This message reached it's retry limit. So delete it."]
+				"EEXPIRED": [ 500, "This message reached it's `maxts` limit. So delete it."]
 

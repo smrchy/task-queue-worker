@@ -16,7 +16,7 @@ Please have a look at the message format for more details.
 
 ```
 var TqwClient = require( "task-queue-worker" ).Client;
-var client = new TqwClient();
+var client = new TqwClient( queue: "myqueuename" );
 client.send( { "url": "http://some.domain.com/job/to/run" }, function( err ){
 	// ...
 });
@@ -104,9 +104,11 @@ Currently only [rsmq](https://github.com/smrchy/rsmq) is supported.
 Want to implement another message queue? Please send me a pull request and include some docs and tests.
 
 
-## Changes
+## Release History
 
-see the [CHANGELOG](https://github.com/smrchy/task-queue-worker/blob/master/CHANGELOG.md)
+|Version|Date|Description|
+|:--:|:--:|:--|
+|v0.2.0|2014-09-22|Updated module to use the new basic class.|
 
 ## The MIT License (MIT)
 

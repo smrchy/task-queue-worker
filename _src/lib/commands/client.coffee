@@ -37,8 +37,6 @@ exports.run = ->
 				_retrydelays = _retrydelays[ 0 ]
 
 			_data.retrydelay = _retrydelays if _retrydelays?
-		
-		console.log _data
 
 		try
 			client.send _data, ( err, resp )=>
