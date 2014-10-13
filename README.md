@@ -109,7 +109,7 @@ Want to implement another message queue? Please send me a pull request and inclu
 
 |Version|Date|Description|
 |:--:|:--:|:--|
-|v0.3.2|2014-10-13|Fixed configuration if used as internal module|
+|v0.3.3|2014-10-13|Fixed configuration if used as internal module|
 |v0.3.1|2014-10-13|Dispose volatile object|
 |v0.3.0|2014-10-13|Added message option `delay` + bugfixes and validations|
 |v0.2.0|2014-09-22|Updated module to use the new basic class.|
