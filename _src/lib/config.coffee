@@ -26,7 +26,10 @@ class Config
 		return
 
 	init: ( input )=>
-		@config = extend( true, {}, DEFAULT, _localconf, input, { version: pckg.version } )
+		if @config?
+			@config = extend( true, @config, input, { version: pckg.version } )
+		else
+			@config = extend( true, {}, DEFAULT, _localconf, input, { version: pckg.version } )
 		@_inited = true
 		return
 

@@ -26,8 +26,9 @@ module.exports = class TQWWorker extends require( "mpbasic" )( config )
 			@_handleError( false, "EMISSINGQUEUES" )
 		return
 
-	initialize: =>
+	initialize: ( options )=>
 		@_validateOptions()
+		config.init( options )
 
 		if @config.client?.constructor?.name is "RedisClient"
 			@redis = @config.client

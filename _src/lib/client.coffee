@@ -23,9 +23,10 @@ module.exports = class TQWClient extends require( "mpbasic" )( config )
 			@_handleError( false, "EMISSINGQUEUE" )
 		return
 
-	initialize: =>
+	initialize: ( options )=>
 		@_validateOptions()
 
+		config.init( options )
 		@connected = false
 
 		@Message = require( "./message" )( @config.messageDefaults )
