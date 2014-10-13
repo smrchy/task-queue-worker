@@ -1,8 +1,8 @@
 {
 	"name": "task-queue-worker",
 	"description": "A powerful tool for background processing of tasks that are run by making standard http requests.",
-	"version": "0.2.0",
-	"author": "P. Liess <smrchy+npm@gmail.com>",
+	"version": "0.3.0",
+	"author": "M. Peter (mp@tcs.de)",
 	"engines": {
 		"node": "> 0.8.10"
 	},
