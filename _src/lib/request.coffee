@@ -38,18 +38,26 @@ module.exports = class TQWRequest extends require( "mpbasic" )( config )
 				@msg.worker.emit "request:body", req?.body
 			if err
 				cb( err )
+				@_dispose()
 				return
 
 			if req.statusCode >= 200 and req.statusCode < 300
 				@info "http OK", req.statusCode
 				cb( null )
+				@_dispose()
 				return
 			
 			@warning "Answerd with status Code: #{req.statusCode}", req?.request?.href
 			_err = @_handleError( true, "ENOT2XX" )
 			_err.statusCode = req.statusCode if req?.statusCode
 			cb( _err )
+			@_dispose()
 			return
+
+	_dispose: =>
+		@msg = null
+		delete @
+		return
 
 	ERRORS: =>
 		@extend super, 

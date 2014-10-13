@@ -56,16 +56,16 @@ module.exports = class TQWClient extends require( "mpbasic" )( config )
 				return
 		return
 
-	_send: ( msg, cb )=>
-		_msg = new @Message( msg )
-		@queue.send _msg, ( err, resp )=>
+	_send: ( msgData, cb )=>
+		msg = new @Message( msgData )
+		@queue.send msg, ( err, resp )=>
 			if err
 				@_handleError( cb, err )
 				return
 			if cb?
 				cb( null, resp )
 				return
-			
+			@msg._dispose()
 			@debug( "send done", resp )
 			return
 		return

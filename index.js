@@ -1,5 +1,5 @@
 (function() {
-  exports.version = '0.2.1';
+  exports.version = '0.3.0';
 
   exports.Worker = require('./lib/worker');
 

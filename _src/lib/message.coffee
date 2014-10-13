@@ -56,7 +56,7 @@ module.exports = ( options )->
 			return @retrydelay
 
 		getDelay: =>
-			if @meta.receiveCount < 1
+			if ( @meta?.receiveCount or 0 ) < 1
 				return @delay
 			else
 				_retry = @getRetryDelay( @meta.receiveCount )
@@ -68,14 +68,19 @@ module.exports = ( options )->
 		process: ( next, fail )=>
 			if @meta.receiveCount > @retrylimit
 				fail( @_handleError( true, "EREACHEDRETRYLIMIT" ), @ )
+				@_dispose()
 				return
 
 			if @maxts >= 0 and utils.now() > @maxts
 				fail( @_handleError( true, "EEXPIRED" ), @ )
+				@_dispose()
 				return
 			
 			@debug "process message", @toJSON()
-			new Request( @ ).exec( next )
+			new Request( @ ).exec =>
+				next.apply( arguments )
+				@_dispose()
+				return
 			return
 
 		defineProperties: =>
@@ -148,6 +153,14 @@ module.exports = ( options )->
 					@data[ _k ] = _v
 					return
 				) )
+			return
+
+		_dispose: =>
+			@meta = null
+			@worker = null
+			@config = null
+			@removeAllListeners()
+			delete @
 			return
 
 		ERRORS: =>
