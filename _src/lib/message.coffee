@@ -13,6 +13,7 @@ module.exports = ( options )->
 			return @extend true, super,
 				method: "GET"
 				body: null
+				delay: 0
 				retrylimit: 3
 				retrydelay: 120
 				maxts: -1
@@ -41,16 +42,28 @@ module.exports = ( options )->
 			return
 
 		toJSON: =>
-			return _.pick( @, [ "url","method","body","retrylimit","retrydelay","maxts","timeout","failqueue","maxredirects" ] )
+			return _.pick( @, [ "url","method","body","retrylimit","retrydelay","delay","maxts","timeout","failqueue","maxredirects" ] )
 
 		toString: =>
 			return JSON.stringify( @toJSON() )
 
-		getDelay: =>
+		getRetryDelay: ( retries )=>
 			if _.isArray( @retrydelay )
-				# TODO select correct delay
-				return @retrydelay[ 0 ]
+				if @retrydelay[ retries ]?
+					return @retrydelay[ retries ]
+				else
+					return _.last( @retrydelay )
 			return @retrydelay
+
+		getDelay: =>
+			if @meta.receiveCount < 1
+				return @delay
+			else
+				_retry = @getRetryDelay( @meta.receiveCount )
+				if @delay > _retry
+					return @delay
+				else
+					return _retry
 
 		process: ( next, fail )=>
 			if @meta.receiveCount > @retrylimit
@@ -110,17 +123,23 @@ module.exports = ( options )->
 			@getter( "hasBody", =>@data.body? )
 			@getter( "hasJSONBody", =>@data.hasJSONBody )
 			
-			[ "retrylimit","retrydelay","maxts","timeout","failqueue","maxredirects" ].forEach ( _k )=>
+			[ "retrylimit","retrydelay","maxts","timeout","failqueue","maxredirects", "delay" ].forEach ( _k )=>
 				@define( _k, ( =>return @data[ _k ] or @config[ _k ]), ( ( _v )=>
 					switch _k
-						when "retrylimit", "retrydelay", "maxts", "timeout", "maxredirects"
+
+						# for number based options
+						when "retrylimit", "retrydelay", "maxts", "timeout", "maxredirects", "delay"
 							if not _.isNumber( _v )
 								@warning "invalid `#{_k}` so use default `#{@config[ _k ]}`"
 								return
+
+						# for string based options
 						when "failqueue"
 							if _v? and not _.isString( _v )
 								@warning "invalid `#{_k}` so use default `#{@config[ _k ]}`"
 								return
+
+						# for number or array based options
 						when "retrydelay"
 							if not _.isNumber( _v ) and not ( _.isArray( _v ) and _v.length )
 								@warning "invalid `#{_k}` so use default `#{@config[ _k ]}`"

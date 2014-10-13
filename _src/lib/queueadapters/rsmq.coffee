@@ -19,7 +19,8 @@ module.exports = ->
 			@emptycount = 0
 			@getter( "name", =>@config.name )
 
-		send: ( msg, delay, cb )=>
+		send: ( args..., cb )=>
+			[ msg, delay ] = args
 			_data = { qname: @config.name, message: msg.toString(), delay: ( if delay? then delay else msg.getDelay() ) }
 			@debug "send", _data
 			@rsmq.sendMessage _data, ( err, resp )=>

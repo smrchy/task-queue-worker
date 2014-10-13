@@ -58,7 +58,7 @@ module.exports = class TQWClient extends require( "mpbasic" )( config )
 
 	_send: ( msg, cb )=>
 		_msg = new @Message( msg )
-		@queue.send _msg, 0, ( err, resp )=>
+		@queue.send _msg, ( err, resp )=>
 			if err
 				@_handleError( cb, err )
 				return
