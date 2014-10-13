@@ -35,7 +35,7 @@ module.exports = ->
 
 		receive: ( caller )=>
 			@debug "start receive"
-			@emptycount++
+			#@emptycount++
 			process.nextTick =>
 				@rsmq.receiveMessage qname: @config.name, ( err, msg )=>
 					@debug "received", msg

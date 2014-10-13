@@ -66,7 +66,7 @@ module.exports = class TQWQueueing extends require( "mpbasic" )( config )
 					@intervall()
 					return
 
-				@info "recieve", @Qidx, queue.name, queue.emptycount
+				@info "recieve - Worker:#{@Qidx} Queue:#{queue.name} Emptycount: #{queue.emptycount}"
 				queue.receive( @ )
 				return
 			return

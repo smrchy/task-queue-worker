@@ -21,13 +21,13 @@ module.exports = class TQWWorker extends require( "mpbasic" )( config )
 			# message defaults
 			messageDefaults: {}
 
-	_validateOptions:( options )=>
-		if not options.queues?.length and not options.configkey?.length
-			@_handleError( "config-validation", "EMISSINGQUEUES" )
-			return false
-		return true
+	_validateOptions: =>
+		if not @config.queues?.length and not @config.configkey?.length
+			@_handleError( false, "EMISSINGQUEUES" )
+		return
 
 	initialize: =>
+		@_validateOptions()
 
 		if @config.client?.constructor?.name is "RedisClient"
 			@redis = @config.client
@@ -47,6 +47,10 @@ module.exports = class TQWWorker extends require( "mpbasic" )( config )
 		return
 
 	initQueues: =>
+		if not @config.queues and @config.queues.split( "," )?.length <= 0
+			@_handleError( "config-validation", err )
+			return
+
 		config.queues = @config.queues = @config.queues.split( "," )
 		#@debug "initQueues", @config
 		@queueModule = require( "./queueadapters/#{ @config.queuetype }" )()
@@ -76,5 +80,5 @@ module.exports = class TQWWorker extends require( "mpbasic" )( config )
 
 	ERRORS: =>
 		@extend super, 
-			"EMISSINGQUEUES": "You have to define the list of queues to monitor or set a `configkey`."
-			"EEMPTYCONFIGKEY": "The given config key does not contain queuenames"
+			"EMISSINGQUEUES": [ 409, "You have to define the list of queues to monitor or set a `configkey`." ]
+			"EEMPTYCONFIGKEY": [ 409, "The given config key does not contain queuenames" ]

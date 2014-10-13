@@ -94,7 +94,7 @@ module.exports = ( options )->
 			@define( "body", ( =>@data.body), ( ( body )=>
 				if _.isObject( body )
 					@data.body = body
-					@config.headers[ "Content-Type" ] = "application/json"
+					@data.headers[ "Content-Type" ] = "application/json"
 					@data.hasJSONBody = true
 					return
 				try

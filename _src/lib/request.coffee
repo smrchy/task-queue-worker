@@ -46,9 +46,11 @@ module.exports = class TQWRequest extends require( "mpbasic" )( config )
 				return
 			
 			@warning "Answerd with status Code: #{req.statusCode}", req?.request?.href
-			@_handleError( cb, "ENOT2XX" )
+			_err = @_handleError( true, "ENOT2XX" )
+			_err.statusCode = req.statusCode if req?.statusCode
+			cb( _err )
 			return
 
 	ERRORS: =>
 		@extend super, 
-			"ENOT2XX": "The http response is not type of 200"
+			"ENOT2XX": [ 500, "The http response is not type of 200" ]
